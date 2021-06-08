@@ -1,0 +1,149 @@
+---
+title: Regular Season Vs. Playoffs Trends
+author: Trenten Tso
+date: '2021-06-07'
+slug: regular-season-vs-playoffs-trends
+categories:
+  - R
+  - Basketball
+  - Sports
+tags: []
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+<script src="{{< blogdown/postref >}}index_files/htmlwidgets/htmlwidgets.js"></script>
+<script src="{{< blogdown/postref >}}index_files/jquery/jquery.min.js"></script>
+<link href="{{< blogdown/postref >}}index_files/datatables-css/datatables-crosstalk.css" rel="stylesheet" />
+<script src="{{< blogdown/postref >}}index_files/datatables-binding/datatables.js"></script>
+<link href="{{< blogdown/postref >}}index_files/dt-core/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="{{< blogdown/postref >}}index_files/dt-core/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="{{< blogdown/postref >}}index_files/dt-core/js/jquery.dataTables.min.js"></script>
+<link href="{{< blogdown/postref >}}index_files/crosstalk/css/crosstalk.css" rel="stylesheet" />
+<script src="{{< blogdown/postref >}}index_files/crosstalk/js/crosstalk.min.js"></script>
+
+
+<p>To examine the changes of how playoff games are played compared to the regular season, we used basketballreference.com to download basketball stats to examine what an average regular season and playoff game looks like. We used data from the past 11 seasons to accurately represent the “modern NBA”.</p>
+<p>To clean the regular season data, we had to eliminate teams that did not make playoffs that year so we can compare the same teams from regular season to playoffs</p>
+<p>To find how an average game plays out, we found the mean from the 16 teams for each stat category</p>
+<p>Our basketball categories of choice were Points Per Game, Shooting Percentage, Personal Fouls per game, Shots per game, Assists per game, the percent of shots that were 3 pointers, and Turnovers per game. We picked these variables because we believe they help portray a “story” of each game - ex: slower pace of play, referees willingness to call fouls, type of shot selection, tougher playing environment.</p>
+<pre class="r"><code>joined_data %&gt;%
+  ggplot(aes(x = Year, y = PTS, group = Type, color = Type)) + geom_line() + theme_classic() + ggtitle(&quot;Regular Season vs. Playoffs Points per Game&quot;) + scale_x_continuous(breaks = seq(2010,2020, by = 1))</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<pre class="r"><code>joined_data %&gt;%
+  ggplot(aes(x = Year, y = FG., group = Type, color = Type)) + geom_line() + theme_classic() + ggtitle(&quot;Regular Season vs. Playoffs Shooting Percentages per Game&quot;) + scale_x_continuous(breaks = seq(2010,2020, by = 1))</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-12-2.png" width="672" /></p>
+<pre class="r"><code>joined_data %&gt;%
+  ggplot(aes(x = Year, y = PF, group = Type, color = Type)) + geom_line() + theme_classic() + ggtitle(&quot;Regular Season vs. Playoffs Number of Personal Fouls per Game&quot;) + scale_x_continuous(breaks = seq(2010,2020, by = 1))</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-12-3.png" width="672" /></p>
+<pre class="r"><code>joined_data %&gt;%
+  ggplot(aes(x = Year, y = FGA, group = Type, color = Type)) + geom_line() + theme_classic() + ggtitle(&quot;Regular Season vs. Playoffs Number of Shot Attempts per Game&quot;) + scale_x_continuous(breaks = seq(2010,2020, by = 1))</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-12-4.png" width="672" /></p>
+<pre class="r"><code>joined_data %&gt;%
+  ggplot(aes(x = Year, y = AST, group = Type, color = Type)) + geom_line() + theme_classic() + ggtitle(&quot;Regular Season vs. Playoffs Number of Assists per Game&quot;) + scale_x_continuous(breaks = seq(2010,2020, by = 1))</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-12-5.png" width="672" /></p>
+<pre class="r"><code>joined_data %&gt;%
+  ggplot(aes(x = Year, y = three_try_percent, group = Type, color = Type)) + geom_line() + theme_classic() + ggtitle(&quot;Regular Season vs. Playoffs Number Percent of Three Pointers Taken&quot;) + scale_x_continuous(breaks = seq(2010,2020, by = 1))</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-12-6.png" width="672" /></p>
+<pre class="r"><code>joined_data %&gt;%
+  ggplot(aes(x = Year, y = TOV, group = Type, color = Type)) + geom_line() + theme_classic() + ggtitle(&quot;Regular Season vs. Playoffs Number of Turnovers&quot;) + scale_x_continuous(breaks = seq(2010,2020, by = 1))</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-12-7.png" width="672" /></p>
+<p>Most of these stats are consistently larger/smaller in the playoffs. Just by visualizing data we can assume a playoff game will less points, a worse shooting percentage, and have less assists. One interesting observation is the steep increase of Three Pointers taken per game compared to 10 years ago.</p>
+<p>We conducted 95% confidence intervals for the mean of each statistic for the regular season and playoffs to get a better understanding of the values we can expect for the different type of game.</p>
+<pre class="r"><code>DT::datatable(ci_df)</code></pre>
+<div id="htmlwidget-1" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14"],[22.278,19.309,82.512,80.652,0.46,0.434,19.731,21.394,101.413,96.093,0.264,0.27,13.921,13.388],[23.526,21.264,85.762,84.297,0.464,0.446,20.238,22,107.279,102.997,0.327,0.348,14.265,13.788],["Assits","Assits","FG Attempts","FG Attempts","FG Percent","FG Percent","Personal Fouls","Personal Fouls","Points","Points","% shot is a 3","% shot is a 3","Turnovers","Turnovers"],["Regular Season","Playoffs","Regular Season","Playoffs","Regular Season","Playoffs","Regular Season","Playoffs","Regular Season","Playoffs","Regular Season","Playoffs","Regular Season","Playoffs"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>lower_ci<\/th>\n      <th>upper_ci<\/th>\n      <th>stat<\/th>\n      <th>type<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[1,2]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p>After examining our graphs and confidence interval, we hypothesized on average, playoff stats are lower than regular season stats. To test this hypothesis, we conducted a one-sided “lower” paired t-test. We first had to had get the playoff and regular season average stats into the same dataframe.</p>
+<p>A paired t-test is used to compare the means of two variables from the same “item” or “thing”, and are being measured with a unique condition. For example, regular season assists and playoff assists come from the same set of teams, while the unique condition is the type of game. We had to create new difference variables (playoff - regular season) to run our test on.</p>
+<pre class="r"><code>knitr::kable(calc_pvalue(regs_plays, diff_AST))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">p_value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">0.001</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>knitr::kable(calc_pvalue(regs_plays, diff_FG_cent))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">p_value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">0</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>knitr::kable(calc_pvalue(regs_plays, diff_FGA))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">p_value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">0.006</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>knitr::kable(calc_pvalue(regs_plays, diff_PF))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">p_value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">1</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>knitr::kable(calc_pvalue(regs_plays, diff_PTS))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">p_value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">0.001</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>knitr::kable(calc_pvalue(regs_plays, diff_three))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">p_value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">0.952</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>knitr::kable(calc_pvalue(regs_plays, diff_TOV))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">p_value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">0</td>
+</tr>
+</tbody>
+</table>
+<p>We ran a one-sided t-test to test if playoff averages were less than regular season averages. Because playoff stats were consistently larger/smaller than the regular season, we ended with p-values of 0 for Assists, Points, Turnovers, and Field Goal Percent. In addition, we calculated a p-value of ~.005 of Field Goal attempts. This means, based on our data of the last 11 seasons of the “average” regular season and playoff games, we can always expect playoff games to produce less points, Assists, Turnovers, and shooting percentage while almost being certain there will be less shot attempts per game. Conversely, we got a p-value of 1 for personal fouls, and a high p-value of ~.97 for three point shots, meaning we can expect there to be more personal fouls per game and almost certain the three point shots per game are not less in the playoffs.</p>
+<p>To conclude, we can expect a typical playoff team to play harder defense and offenses to score less points and shoot worse compared to when they played in the regular season.</p>

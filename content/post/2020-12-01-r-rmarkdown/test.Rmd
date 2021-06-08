@@ -1,0 +1,13 @@
+---
+title: "NBA Analysis"
+author: "Trenten Tso"
+date: 2020-12-01T21:13:14-05:00
+categories: ["R"]
+tags: ["R Markdown", "plot", "regression"]
+---
+
+```{r}
+1 + 1
+```
+
+A test

@@ -1,0 +1,365 @@
+---
+title: Regular Season Vs. Playoffs Trends
+author: Trenten Tso
+date: '2021-06-07'
+slug: regular-season-vs-playoffs-trends
+categories:
+  - R
+  - Basketball
+  - Sports
+tags: []
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(infer)
+library(DT)
+
+```
+
+To examine the changes of how playoff games are played compared to the regular season, we used basketballreference.com to download basketball stats to examine what an average regular season and playoff game looks like. We used data from the past 11 seasons to accurately represent the "modern NBA". 
+
+```{r, include = FALSE}
+# Read Playoff Data in 
+ten_playoffs <- read.csv(here::here("Data2", "2010 playoffs.csv"))
+eleven_playoffs <- read.csv(here::here("Data2", "2011 playoffs.csv"))
+twelve_playoffs <- read.csv(here::here("Data2", "2012 playoffs.csv"))
+thirteen_playoffs <- read.csv(here::here("Data2", "2013 playoffs.csv"))
+fourteen_playoffs <- read.csv(here::here("Data2", "2014 playoffs.csv"))
+fifteen_playoffs <- read.csv(here::here("Data2", "2015 Playoffs.csv"))
+sixteen_playoffs <- read.csv(here::here("Data2", "2016 playoffs.csv"))
+seventeen_playoffs <- read.csv(here::here("Data2", "2017 playoffs.csv"))
+eighteen_playoffs <- read.csv(here::here("Data2", "2018 playoffs.csv"))
+nineteen_playoffs <- read.csv(here::here("Data2", "2019 playoffs.csv"))
+twenty_playoffs <- read.csv(here::here("Data2", "2020 playoffs.csv"))
+```
+```{r, include = FALSE}
+# Read Regular season Data 
+ten_regular <- read.csv(here::here("Data2", "2010 regular season.csv"))
+eleven_regular <- read.csv(here::here("Data2", "2011 regular season.csv"))
+twelve_regular <- read.csv(here::here("Data2", "2012 regular season.csv"))
+thirteen_regular <- read.csv(here::here("Data2", "2013 regular season.csv"))
+fourteen_regular <- read.csv(here::here("Data2", "2014 regular season.csv"))
+fifteen_regular <- read.csv(here::here("Data2", "2015 regular season.csv"))
+sixteen_regular <- read.csv(here::here("Data2", "2016 regular season.csv"))
+seventeen_regular <- read.csv(here::here("Data2", "2017 regular season.csv"))
+eighteen_regular <- read.csv(here::here("Data2", "2018 regular season.csv"))
+nineteen_regular <- read.csv(here::here("Data2", "2019 regular season.csv"))
+twenty_regular <- read.csv(here::here("Data2", "2020 regular season.csv"))
+```
+
+To clean the regular season data, we had to eliminate teams that did not make playoffs that year so we can compare the same teams from regular season to playoffs
+
+```{r, include = FALSE}
+# filter out regular season teams that didn't make playoffs
+get_playoff_teams <- function(df){
+  df %>%
+    filter(str_detect(Team, "[A-z]\\*"))
+}
+```
+
+```{r, include = FALSE}
+eleven_regular <- get_playoff_teams(eleven_regular)
+twelve_regular <- get_playoff_teams(twelve_regular)
+thirteen_regular <- get_playoff_teams(thirteen_regular)
+fourteen_regular <- get_playoff_teams(fourteen_regular)
+fifteen_regular <- get_playoff_teams(fifteen_regular)
+sixteen_regular <- get_playoff_teams(sixteen_regular)
+seventeen_regular <- get_playoff_teams(seventeen_regular)
+eighteen_regular <- get_playoff_teams(eighteen_regular)
+nineteen_regular <- get_playoff_teams(nineteen_regular)
+twenty_regular <- get_playoff_teams(twenty_regular)
+```
+To find how an average game plays out, we found the mean from the 16 teams for each stat category 
+
+```{r, include = FALSE}
+add_averages <- function(df){
+  
+  avg <- summarize_all(df, mean)
+  rbind(df, avg)
+}
+```
+```{r, warning = FALSE, include = FALSE}
+eleven_playoffs <- add_averages(eleven_playoffs)
+twelve_playoffs <- add_averages(twelve_playoffs)
+thirteen_playoffs <- add_averages(thirteen_playoffs)
+fourteen_playoffs <- add_averages(fourteen_playoffs)
+fifteen_playoffs <- add_averages(fifteen_playoffs)
+sixteen_playoffs <- add_averages(sixteen_playoffs)
+seventeen_playoffs <- add_averages(seventeen_playoffs)
+eighteen_playoffs <- add_averages(eighteen_playoffs)
+nineteen_playoffs <- add_averages(nineteen_playoffs)
+twenty_playoffs <- add_averages(twenty_playoffs)
+
+eleven_regular <- add_averages(eleven_regular)
+twelve_regular <- add_averages(twelve_regular)
+thirteen_regular <- add_averages(thirteen_regular)
+fourteen_regular <- add_averages(fourteen_regular)
+fifteen_regular <- add_averages(fifteen_regular)
+sixteen_regular <- add_averages(sixteen_regular)
+seventeen_regular <- add_averages(seventeen_regular)
+eighteen_regular <- add_averages(eighteen_regular)
+nineteen_regular <- add_averages(nineteen_regular)
+twenty_regular <- add_averages(twenty_regular)
+```
+```{r, include = FALSE}
+# Get yearly playoff and regular season averages into separate dataframes
+ten <- ten_playoffs[17, ]
+eleven <- eleven_playoffs[17, ]
+twelve <- twelve_playoffs[17, ]
+thirteen <- thirteen_playoffs[17, ]
+fourteen <- fourteen_playoffs[17, ]
+fifteen <- fifteen_playoffs[17, ]
+sixteen <- sixteen_playoffs[17, ]
+seventeen <- seventeen_playoffs[17, ]
+eighteen <- eighteen_playoffs[17, ]
+nineteen <- nineteen_playoffs[17, ]
+twenty <- twenty_playoffs[17, ]
+playoff_averages <- rbind(ten, eleven, twelve, thirteen, fourteen, fifteen, sixteen, seventeen, eighteen, nineteen, twenty)
+```
+```{r, include = FALSE}
+zero <- ten_regular[17, ]
+one <- eleven_regular[17, ]
+two <- twelve_regular[17, ]
+three <- thirteen_regular[17, ]
+four <- fourteen_regular[17, ]
+five <- fifteen_regular[17, ]
+six <- sixteen_regular[17, ]
+seven <- seventeen_regular[17, ]
+eight <- eighteen_regular[17, ]
+nine <- nineteen_regular[17, ]
+tens <- twenty_regular[17, ]
+
+regular_averages <- rbind(zero, one, two, three, four, five, six, seven, eight, nine, tens)
+```
+```{r, include = FALSE}
+# Create year variable and 3pt/2pt shot percentage
+regular_averages <- regular_averages %>%
+  mutate(
+    Year = c(2010:2020)
+  ) %>%
+  mutate(
+    three_try_percent = X3PA / FGA
+  )
+
+playoff_averages <- playoff_averages %>%
+  mutate(
+    Year = c(2010:2020)
+  ) %>%
+  mutate(
+    three_try_percent = X3PA / FGA
+  )
+```
+```{r, include = FALSE}
+# Plot Basketball Stats by year 
+regular_averages <- regular_averages %>%
+  mutate(
+    Type = c("Regular Season","Regular Season","Regular Season","Regular Season","Regular Season","Regular Season","Regular Season","Regular Season","Regular Season","Regular Season","Regular Season")
+  )
+
+playoff_averages <- playoff_averages %>%
+  mutate(
+    Type = c("Playoffs","Playoffs","Playoffs","Playoffs","Playoffs","Playoffs","Playoffs","Playoffs","Playoffs","Playoffs","Playoffs")
+  )
+```
+```{r, include = FALSE}
+joined_data <- full_join(regular_averages, playoff_averages)
+```
+
+Our basketball categories of choice were Points Per Game, Shooting Percentage, Personal Fouls per game, Shots per game, Assists per game, the percent of shots that were 3 pointers, and Turnovers per game. We picked these variables because we believe they help portray a "story" of each game - ex: slower pace of play, referees willingness to call fouls, type of shot selection, tougher playing environment. 
+
+```{r, warning = FALSE, message = FALSE}
+joined_data %>%
+  ggplot(aes(x = Year, y = PTS, group = Type, color = Type)) + geom_line() + theme_classic() + ggtitle("Regular Season vs. Playoffs Points per Game") + scale_x_continuous(breaks = seq(2010,2020, by = 1))
+
+joined_data %>%
+  ggplot(aes(x = Year, y = FG., group = Type, color = Type)) + geom_line() + theme_classic() + ggtitle("Regular Season vs. Playoffs Shooting Percentages per Game") + scale_x_continuous(breaks = seq(2010,2020, by = 1))
+
+joined_data %>%
+  ggplot(aes(x = Year, y = PF, group = Type, color = Type)) + geom_line() + theme_classic() + ggtitle("Regular Season vs. Playoffs Number of Personal Fouls per Game") + scale_x_continuous(breaks = seq(2010,2020, by = 1))
+
+joined_data %>%
+  ggplot(aes(x = Year, y = FGA, group = Type, color = Type)) + geom_line() + theme_classic() + ggtitle("Regular Season vs. Playoffs Number of Shot Attempts per Game") + scale_x_continuous(breaks = seq(2010,2020, by = 1))
+
+joined_data %>%
+  ggplot(aes(x = Year, y = AST, group = Type, color = Type)) + geom_line() + theme_classic() + ggtitle("Regular Season vs. Playoffs Number of Assists per Game") + scale_x_continuous(breaks = seq(2010,2020, by = 1))
+
+joined_data %>%
+  ggplot(aes(x = Year, y = three_try_percent, group = Type, color = Type)) + geom_line() + theme_classic() + ggtitle("Regular Season vs. Playoffs Number Percent of Three Pointers Taken") + scale_x_continuous(breaks = seq(2010,2020, by = 1))
+
+joined_data %>%
+  ggplot(aes(x = Year, y = TOV, group = Type, color = Type)) + geom_line() + theme_classic() + ggtitle("Regular Season vs. Playoffs Number of Turnovers") + scale_x_continuous(breaks = seq(2010,2020, by = 1))
+
+
+```
+
+Most of these stats are consistently larger/smaller in the playoffs. Just by visualizing data we can assume a playoff game will less points, a worse shooting percentage, and have less assists. One interesting observation is the steep increase of Three Pointers taken per game compared to 10 years ago. 
+
+We conducted 95% confidence intervals for the mean of each statistic for the regular season and playoffs to get a better understanding of the values we can expect for the different type of game. 
+
+```{r, include = FALSE}
+# Write Function to get confidence interval of a statistic
+get_stat_ci <- function(df, x){
+  
+  ci <- df %>%
+  specify(response = {{x}}) %>%
+  generate(reps = 1000) %>%
+  calculate(stat = "mean") %>%
+  get_confidence_interval(level = .95, type = "percentile")
+
+  return (ci)
+}
+```
+
+```{r, include = FALSE}
+reg_PTS <- get_stat_ci(regular_averages, PTS)
+play_PTS <- get_stat_ci(playoff_averages, PTS)
+reg_fgp <- get_stat_ci(regular_averages, FG.)
+play_fgp <- get_stat_ci(playoff_averages, FG.)
+reg_PF<- get_stat_ci(regular_averages, PF)
+play_PF <- get_stat_ci(playoff_averages, PF)
+reg_FGA <- get_stat_ci(regular_averages, FGA)
+play_FGA <- get_stat_ci(playoff_averages, FGA)
+reg_AST <- get_stat_ci(regular_averages, AST)
+play_AST <- get_stat_ci(playoff_averages, AST)
+reg_three <- get_stat_ci(regular_averages, three_try_percent)
+play_three <- get_stat_ci(playoff_averages, three_try_percent)
+reg_TOV <- get_stat_ci(regular_averages, TOV)
+play_TOV <- get_stat_ci(playoff_averages, TOV)
+```
+```{r, include = FALSE}
+better_df <- function(df,x,y){
+  df %>%
+  mutate(
+    stat = x
+  ) %>%
+  mutate(
+    type = y
+  )
+}
+
+reg_AST <- better_df(reg_AST, "Assits", "Regular Season")
+play_AST <- better_df(play_AST, "Assits", "Playoffs")
+reg_FGA <- better_df(reg_FGA, "FG Attempts", "Regular Season")
+play_FGA <- better_df(play_FGA, "FG Attempts", "Playoffs")
+reg_fgp <- better_df(reg_fgp, "FG Percent", "Regular Season")
+play_fgp <- better_df(play_fgp, "FG Percent", "Playoffs")
+
+reg_PF <- better_df(reg_PF, "Personal Fouls", "Regular Season")
+play_PF <- better_df(play_PF, "Personal Fouls", "Playoffs")
+
+reg_PTS <- better_df(reg_PTS, "Points", "Regular Season")
+play_PTS <- better_df(play_PTS, "Points", "Playoffs")
+
+reg_three <- better_df(reg_three, "% shot is a 3", "Regular Season")
+play_three <- better_df(play_three, "% shot is a 3", "Playoffs")
+
+reg_TOV <- better_df(reg_TOV, "Turnovers", "Regular Season")
+play_TOV <- better_df(play_TOV, "Turnovers", "Playoffs")
+```
+```{r, include = FALSE}
+ci_df <- rbind(reg_AST, play_AST, reg_FGA, play_FGA, reg_fgp, play_fgp, reg_PF, play_PF, reg_PTS, play_PTS, reg_three, play_three, reg_TOV, play_TOV)
+ci_df <- ci_df %>%
+  mutate(across(1:2, round, 3))
+```
+```{r}
+DT::datatable(ci_df)
+```
+
+After examining our graphs and confidence interval, we hypothesized on average, playoff stats are lower than regular season stats. To test this hypothesis, we conducted a one-sided "lower" paired t-test. We first had to had get the playoff and regular season average stats into the same dataframe. 
+
+```{r, include = FALSE}
+regs_PTS <- regular_averages %>%
+  pull(PTS)
+regs_AST <- regular_averages %>%
+  pull(AST)
+regs_TOV <- regular_averages %>%
+  pull(TOV)
+regs_FG_cent <- regular_averages %>%
+  pull(FG.)
+regs_three <- regular_averages %>%
+  pull(three_try_percent)
+regs_PF <- regular_averages %>%
+  pull(PF)
+regs_FGA <- regular_averages %>%
+  pull(FGA)
+
+```
+```{r, include = FALSE}
+plays_PTS <- playoff_averages %>%
+  pull(PTS)
+plays_AST <- playoff_averages %>%
+  pull(AST)
+plays_TOV <- playoff_averages %>%
+  pull(TOV)
+plays_FG_cent <- playoff_averages %>%
+  pull(FG.)
+plays_three <- playoff_averages %>%
+  pull(three_try_percent)
+plays_PF <- playoff_averages %>%
+  pull(PF)
+plays_FGA <- playoff_averages %>%
+  pull(FGA)
+```
+```{r, include = FALSE}
+regs_plays <- data.frame(regs_AST, regs_FG_cent, regs_FGA, regs_PF, regs_PTS, regs_three, regs_TOV, plays_AST, plays_FG_cent, plays_FGA, plays_PF, plays_PTS, plays_three, plays_TOV)
+
+```
+
+A paired t-test is used to compare the means of two variables from the same "item" or "thing", and are being measured with a unique condition. For example, regular season assists and playoff assists come from the same set of teams, while the unique condition is the type of game. We had to create new difference variables (playoff - regular season) to run our test on. 
+
+```{r, include = FALSE}
+# Get difference column (playoff - regular)
+regs_plays <- regs_plays %>%
+  mutate(
+    diff_AST = plays_AST - regs_AST
+  ) %>%
+  mutate(
+    diff_FG_cent = plays_FG_cent - regs_FG_cent
+  ) %>%mutate(
+    diff_FGA = plays_FGA - regs_FGA
+  ) %>%mutate(
+    diff_PF = plays_PF - regs_PF
+  ) %>%mutate(
+    diff_PTS = plays_PTS - regs_PTS
+  ) %>%mutate(
+    diff_three = plays_three - regs_three
+  ) %>%mutate(
+    diff_TOV = plays_TOV - regs_TOV
+  ) 
+
+```
+```{r, include = FALSE}
+# Get P-Value of Paired t-test in a function
+calc_pvalue <- function(df, x){
+  
+  observed_stat <- df %>%
+    specify(response = {{x}}) %>%
+    hypothesize(null = "point", mu = 0) %>%
+    calculate(stat = "t")
+  
+  null_dist <- df %>%
+  specify(response = {{x}}) %>%
+  hypothesize(null = "point", mu = 0) %>%
+  generate(reps = 1000, type = "bootstrap") %>%
+  calculate(stat = "t")
+  
+  pval <- null_dist %>%
+    get_p_value(obs_stat = observed_stat, direction = "less")
+  
+  return (pval)
+}
+```
+```{r, warning = FALSE}
+knitr::kable(calc_pvalue(regs_plays, diff_AST))
+knitr::kable(calc_pvalue(regs_plays, diff_FG_cent))
+knitr::kable(calc_pvalue(regs_plays, diff_FGA))
+knitr::kable(calc_pvalue(regs_plays, diff_PF))
+knitr::kable(calc_pvalue(regs_plays, diff_PTS))
+knitr::kable(calc_pvalue(regs_plays, diff_three))
+knitr::kable(calc_pvalue(regs_plays, diff_TOV))
+```
+
+We ran a one-sided t-test to test if playoff averages were less than regular season averages. Because playoff stats were consistently larger/smaller than the regular season, we ended with p-values of 0 for Assists, Points, Turnovers, and Field Goal Percent. In addition, we calculated a p-value of ~.005 of Field Goal attempts. This means, based on our data of the last 11 seasons of the "average" regular season and playoff games, we can always expect playoff games to produce less points, Assists, Turnovers, and shooting percentage while almost being certain there will be less shot attempts per game. Conversely, we got a p-value of 1 for personal fouls, and a high p-value of ~.97 for three point shots, meaning we can expect there to be more personal fouls per game and almost certain the three point shots per game are not less in the playoffs. 
+
+To conclude, we can expect a typical playoff team to play harder defense and offenses to score less points and shoot worse compared to when they played in the regular season. 
